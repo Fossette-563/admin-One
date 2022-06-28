@@ -1,6 +1,11 @@
 <template>
   <div class="login-container">
-    <el-form class="login-form" :model="loginForm">
+    <el-form
+      class="login-form"
+      :model="loginForm"
+      :rules="LoginRuleForm"
+      ref="loginFormRef"
+    >
       <div class="title-container">
         <h3 class="title">用户登录</h3>
         <svg-icon className="svg-language" icon="language"></svg-icon>
@@ -32,13 +37,20 @@
           placeholder="password"
           name="password"
           v-model="loginForm.password"
-        >
-          <span class="show-pwd">
-            <svg-icon icon="eye"></svg-icon>
-          </span>
-        </el-input>
+          :type="inputType"
+        />
+        <span class="show-pwd" @click="handlePasswordEdit">
+          <el-icon>
+            <svg-icon
+              :icon="inputType === 'password' ? 'eye' : 'eye-open'"
+            ></svg-icon>
+          </el-icon>
+        </span>
       </el-form-item>
-      <el-button type="primary" style="width: 100%; margin-bottom: 30px"
+      <el-button
+        type="primary"
+        style="width: 100%; margin-bottom: 30px"
+        @click="handleLoginSubmit"
         >登录</el-button
       >
     </el-form>
@@ -46,12 +58,50 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-
+import { reactive, ref } from 'vue'
+import { validatePassword } from './rule'
+const inputType = ref('password')
+const loginFormRef = ref()
 const loginForm = reactive({
-  username: 'admin',
-  password: '123456'
+  username: '',
+  password: ''
 })
+/*
+ * 表单验证
+ */
+const LoginRuleForm = reactive({
+  username: [
+    {
+      required: true,
+      trigger: 'blur',
+      message: '用户名必填'
+    }
+  ],
+  password: [
+    {
+      required: true,
+      trigger: 'blur',
+      validator: validatePassword
+    }
+  ]
+})
+/**
+ * 密码框铭文密文
+ */
+const handlePasswordEdit = () => {
+  inputType.value = inputType.value === 'password' ? 'text' : 'password'
+}
+/**
+ * 登录
+ */
+const handleLoginSubmit = async () => {
+  if (!loginFormRef.value) return
+  await loginFormRef.value.validate((valid) => {
+    if (valid) {
+      alert('登录')
+    }
+  })
+}
 </script>
 
 <style lang="scss" scoped>
